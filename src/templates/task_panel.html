@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+{% block head %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .hidden {
+        display: none;
+        }
+    </style>
+    <link rel="stylesheet" href="src/static/task_panel.css">
+{% endblock %}
+{% block body %}
+{% if access == "accountant" or access == "admin" %}
+    {% if approval_status.accountant in [None, 0] %}
+
+        <div class="select-container" id="select-container-accountant">
+            <div id="select-container-accountant-div">
+                <h2>Согласуйте договор</h2>
+                <div class="form-floating">
+                    <select id="accountant" class="form-select">
+                        <option value="1031">Согласован без замечаний</option>
+                        <option value="1033">Согласован с замечаниями</option>
+                        <option value="1035">Несогласован</option>
+                    </select>
+                    <label for="accountant">Бухгалтера</label>
+                </div>
+                <div class="form-floating">
+                    <textarea class="form-control" id="comment-accountant" rows="3" style="height: 130px;"></textarea>
+                    <label for="comment-accountant">Комментарий</label>
+                </div>
+                <button type="button" class="btn" id="button-accountant">ПОДТВЕРДИТЬ</button>
+            </div>
+        </div>
+    {% elif approval_status.accountant in [1035] %}
+        <h2>Договор отклонен бухгалтером</h2>
+    {% elif approval_status.accountant in [1033, 1031] and approval_status.lawyer not in [1037, 1039, 1041] %}
+        <h2>Договор пока не согласован юристом</h2>
+    {% elif approval_status.lawyer == 1041 %}
+        <h2>Договор отклонен юристом</h2>
+    {% elif approval_status.lawyer in [1037, 1039] and attached_file == False %}
+        <h2>Договор согласован</h2>
+    {% elif approval_status.lawyer in [1037, 1039] and attached_file == True %}
+        <h2>Договор согласован и прикреплен к элементу</h2>
+    {% endif %}
+{% endif %}
+{% if access == "lawyer" or access == "admin" %}
+    {% if approval_status.lawyer not in [1037, 1039, 1041] and approval_status.accountant not in [None, 0, 1035] %}
+        <div class="select-container" id="select-container-lawyer">
+            <h2>Договор согласован бухгалтером</h2>
+            <h4>Комментарий: {{ comment_accountant }}</h4>
+            <div class="form-floating">
+                <select id="lawyer" class="form-select">
+                    <option value="1037">Согласован без замечаний</option>
+                    <option value="1039">Согласован с замечаниями</option>
+                    <option value="1041">Несогласован</option>
+                </select>
+                <label for="lawyer">Юристы</label>
+            </div>
+            <div id="file-lawyer" class="mb-3">
+
+                <input class="form-control" type="file" id="formFileMultiple" multiple>
+                <div class="form-floating">
+                    <textarea class="form-control" id="comment-lawyer" rows="3" style="height: 130px;"></textarea>
+                    <label for="comment-lawyer">Комментарий</label>
+                </div>
+                <button type="button" class="btn" id="button-lawyer-send-file">ОТПРАВИТЬ</button>
+            </div>
+<!--            <button type="button" class="btn" id="button-lawyer">ПОДТВЕРДИТЬ</button>-->
+        </div>
+    {% elif approval_status.accountant in [1035] %}
+        <h2>Договор отклонен бухгалтером</h2>
+    {% elif approval_status.lawyer == 1041 %}
+        <h2>Договор отклонен юристом</h2>
+    {% elif approval_status.accountant in [None, 0, 1035] %}
+        <h2>Договор пока не согласован бухгалтером</h2>
+    {% elif approval_status.lawyer in [1037, 1039] and attached_file == False %}
+        <h2>Договор согласован</h2>
+    {% elif approval_status.lawyer in [1037, 1039] and attached_file == True %}
+        <h2>Договор согласован и прикреплен к элементу</h2>
+    {% endif %}
+{% endif %}
+{% endblock %}
+{% block footer %}
+    <script>
+    const select_container_accountant = document.getElementById('select-container-accountant');
+    const select_container_accountant_div = document.getElementById('select-container-accountant-div');
+    const select_container_lawyer = document.getElementById('select-container-lawyer');
+    const button_accountant = document.querySelector('#button-accountant');
+    const button_lawyer = document.querySelector('#button-lawyer');
+    const button_lawyer_file = document.querySelector('#button-lawyer-send-file');
+    const file_lawyer = document.getElementById('file-lawyer');
+    if (button_accountant) {
+        button_accountant.addEventListener('click', function () {
+            var select_option_accountant = document.getElementById('accountant');
+            var comment_accountant = document.getElementById('comment-accountant');
+            let currentDate = new Date();
+            BX24.init(function () {
+                BX24.callMethod('crm.item.update', {
+                    'entityTypeId': 131,
+                    'id': "{{ element_id }}",
+                    'fields': {
+                        'ufCrm12_1709191865371': select_option_accountant.value,
+                        'ufCrm12_1709702893': "{{ user_id }}",
+                        'ufCrm12_1708599567866': comment_accountant.value,
+                        'ufCrm12_1734421319036': currentDate.toISOString()
+                    }
+                });
+                if (select_option_accountant.value === "1031") {
+                    var message = "[B]📄Согласуйте договор[BR][BR]Договор согласован без замечаний Бухгалтером по задаче: [URL={{ portal_url }}company/personal/user/77297/tasks/task/view/{{ task_id }}/]{{ title_task }}[/URL][/B]"
+                    var a = document.createElement('h2');
+                    a.innerHTML = "<h2>Договор согласован без замечаний</h2>";
+                    document.body.style.background = '#cffcd2';
+                    select_container_accountant_div.style.display = 'none';
+                } else if (select_option_accountant.value === "1033") {
+                    var message = "[B]📄Согласуйте договор[BR][BR]Договор согласован с замечаниями Бухгалтером по задаче: [URL={{ portal_url }}company/personal/user/77297/tasks/task/view/{{ task_id }}/]{{ title_task }}[/URL][/B]";
+                    var a = document.createElement('h2');
+                    a.innerHTML = "<h2>Договор согласован с замечаниями</h2>";
+                    document.body.style.background = '#ffcd38';
+                    select_container_accountant_div.style.display = 'none';
+                } else if (select_option_accountant.value === "1035") {
+                    if (!comment_accountant.value) {
+                        alert('Укажите в комментарии причину отклонения');
+                    } else {
+                        BX24.callMethod(
+                            'bizproc.workflow.start',
+                            {
+                            TEMPLATE_ID: 3173,
+                            DOCUMENT_ID: [
+                                'crm',
+                                'Bitrix\\Crm\\Integration\\BizProc\\Document\\Dynamic',
+                                'DYNAMIC_131_{{ element_id }}'
+                            ],
+                            PARAMETERS: {
+                                'Parameter1': 'Бухгалтером',
+                                'Parameter2': comment_accountant.value
+                            },
+                        },
+                        function(result) {
+                            console.log('response', result.answer);
+                            if(result.error())
+                                alert("Error: " + result.error());
+                            else
+                            console.log(result.data());
+                        }
+                        );
+                        var message = "️[B]📄Договор не согласован[BR][BR]Договор НЕ согласован Бухгалтером по задаче: [URL={{ portal_url }}company/personal/user/77297/tasks/task/view/{{ task_id }}/]{{ title_task }}[/URL][/B]";
+                        var a = document.createElement('h2');
+                        a.innerHTML = "<h2>Договор не согласован</h2>";
+                        document.body.style.background = '#fd4343';
+                        BX24.callMethod('tasks.task.update', {
+                        taskId:{{ task_id }},
+                        fields:{"STATUS":5,
+                        }
+                        });
+                        select_container_accountant_div.style.display = 'none';
+                    };
+                }
+                document.body.appendChild(a);
+                fetch(url=`{{ hosting_url }}send_message/?message=${message}&recipient={{ responsible }}`);
+                fetch(url=`{{ hosting_url }}send_message/?message=${message}&recipient={{ created_by }}`);
+            });
+        });
+    }
+    if (button_lawyer_file) {
+        $(document).ready(function() {
+            $("#lawyer").change(function() {
+            if ($(this).val() == "1041") {
+                $("#formFileMultiple").addClass("hidden");
+            } else {
+                $("#formFileMultiple").removeClass("hidden");
+            }
+            });
+        });
+        button_lawyer_file.addEventListener('click', function () {
+            const files = document.getElementById('formFileMultiple').files;
+            var select_option_lawyer = document.getElementById('lawyer');
+            var comment_lawyer = document.getElementById('comment-lawyer');
+            if (files[0] && select_option_lawyer.value != "1041") {
+                let currentDate = new Date();
+                BX24.init(function () {
+                    BX24.callMethod('crm.item.update', {
+                        'entityTypeId': 131,
+                        'id': "{{ element_id }}",
+                        'fields': {
+                            'ufCrm12_1709192259979': select_option_lawyer.value,
+                            'ufCrm12_1709702831': "{{ user_id }}",
+                            'ufCrm12_1708093511140': comment_lawyer.value,
+                            'ufCrm12_1734421294694': currentDate.toISOString()
+                        }
+                    });
+                    if (select_option_lawyer.value === "1037") {
+                        BX24.callMethod(
+                            'bizproc.workflow.start',
+                            {
+                                TEMPLATE_ID: 3171,
+                                DOCUMENT_ID: [
+                                    'crm',
+                                    'Bitrix\\Crm\\Integration\\BizProc\\Document\\Dynamic',
+                                    'DYNAMIC_131_{{ element_id }}'
+                                ],
+                            },
+                            function(result) {
+                                console.log('response', result.answer);
+                                if(result.error())
+                                    alert("Error: " + result.error());
+                                else
+                                console.log(result.data());
+                            }
+                        );
+                        var message = "️[B]📄Договор согласован и прикреплен[BR][BR]Договор согласован без замечаний Юристом по задаче: [URL={{ portal_url }}company/personal/user/77297/tasks/task/view/{{ task_id }}/]{{ title_task }}[/URL][/B]";
+                        var a = document.createElement('h2');
+                        a.innerHTML = "<h2>Договор согласован без замечаний</h2>";
+                        document.body.style.background = '#cffcd2';
+                        document.body.appendChild(a);
+                    } else if (select_option_lawyer.value === "1039") {
+                        BX24.callMethod(
+                            'bizproc.workflow.start',
+                            {
+                                TEMPLATE_ID: 3169,
+                                DOCUMENT_ID: [
+                                    'crm',
+                                    'Bitrix\\Crm\\Integration\\BizProc\\Document\\Dynamic',
+                                    'DYNAMIC_131_{{ element_id }}'
+                                ],
+                                PARAMETERS: {
+                                    'who': 0,
+                                },
+                            },
+                            function(result) {
+                                console.log('response', result.answer);
+                                if(result.error())
+                                    alert("Error: " + result.error());
+                                else
+                                console.log(result.data());
+                            }
+                        );
+                        var message = "️️[B]📄Договор согласован и прикреплен с замечаниями[BR][BR]Договор согласован с замечаниями Юристом по задаче: [URL={{ portal_url }}company/personal/user/77297/tasks/task/view/{{ task_id }}/]{{ title_task }}[/URL][/B]";
+                        var a = document.createElement('h2');
+                        a.innerHTML = "<h2>Договор согласован с замечаниями</h2>";
+                        document.body.style.background = '#ffcd38';
+                        document.body.appendChild(a);
+                        let promise = fetch(url=`{{ hosting_url }}send_message/?message=${message}&recipient={{ accomplices }}`);
+                    }
+                });
+                select_container_lawyer.style.display = 'none';
+                file_lawyer.style.display = 'none';
+                const list_file = [];
+                for (let i = 0; i < files.length; i++) {
+                    if (files[i]) {
+                        const reader = new FileReader();
+                        reader.onload = (event) => list_file.push([files[i].name, String(event.target.result.split(',')[1])])
+                        reader.readAsDataURL(files[i]);
+                        }
+                    }
+                    BX24.init(function () {
+                        BX24.callMethod('crm.item.update', {
+                            'entityTypeId': 131,
+                            'id': "{{ element_id }}",
+                            'fields': {
+                                'ufCrm12_1712146917716': list_file,
+                            }
+                        });
+                })
+                BX24.callMethod('tasks.task.update', {
+                    taskId:{{ task_id }}, 
+                    fields:{"STATUS":5,
+                }
+            });
+            } else if (select_option_lawyer.value != "1041") {
+                alert('Прикрепите договор');
+            } else if (!comment_lawyer.value) {
+                alert('Укажите в комментарии причину отклонения');
+            } else if (select_option_lawyer.value === "1041") {
+                let currentDate = new Date();
+                BX24.callMethod('crm.item.update', {
+                        'entityTypeId': 131,
+                        'id': "{{ element_id }}",
+                        'fields': {
+                            'ufCrm12_1709192259979': select_option_lawyer.value,
+                            'ufCrm12_1709702831': "{{ user_id }}",
+                            'ufCrm12_1708093511140': comment_lawyer.value,
+                            'ufCrm12_1734421294694': currentDate.toISOString()
+                        }
+                    });
+                BX24.callMethod(
+                    'bizproc.workflow.start',
+                    {
+                        TEMPLATE_ID: 3173,
+                        DOCUMENT_ID: [
+                            'crm',
+                            'Bitrix\\Crm\\Integration\\BizProc\\Document\\Dynamic',
+                            'DYNAMIC_131_{{ element_id }}'
+                        ],
+                        PARAMETERS: {
+                            'Parameter1': 'Юристов',
+                            'Parameter2': comment_lawyer.value
+                        },
+                    },
+                    function(result) {
+                        console.log('response', result.answer);
+                        if(result.error())
+                            alert("Error: " + result.error());
+                        else
+                        console.log(result.data());
+                    }
+                );
+                select_container_lawyer.style.display = 'none';
+                file_lawyer.style.display = 'none';
+                var message = "️️[B]📄Договор не согласован[BR][BR]Договор НЕ согласован Юристом по задаче: [URL={{ portal_url }}company/personal/user/77297/tasks/task/view/{{ task_id }}/]{{ title_task }}[/URL][/B]";
+                var a = document.createElement('h2');
+                a.innerHTML = "<h2>Договор отклонен</h2>";
+                document.body.style.background = '#fd4343';
+                document.body.appendChild(a);
+                let promise = fetch(url=`{{ hosting_url }}send_message/?message=${message}&recipient={{ accomplices }}`);
+            }
+        });
+    }
+    </script>
+    <script src="/static/task_panel.js"></script>
+{% endblock %}

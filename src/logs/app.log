@@ -1,0 +1,10 @@
+2025-03-05 22:27:51,637 - uvicorn.error - ERROR - Error loading ASGI app factory: FastAPI.__call__() missing 3 required positional arguments: 'scope', 'receive', and 'send'
+2025-03-05 22:30:57,807 - uvicorn.error - ERROR - Error loading ASGI app factory: FastAPI.__call__() missing 3 required positional arguments: 'scope', 'receive', and 'send'
+2025-03-05 22:33:14,771 - uvicorn.error - INFO - Started server process [12364]
+2025-03-05 22:33:14,771 - uvicorn.error - INFO - Waiting for application startup.
+2025-03-05 22:33:14,772 - uvicorn.error - INFO - Application startup complete.
+2025-03-05 22:33:14,772 - uvicorn.error - INFO - Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+2025-03-05 22:33:17,380 - uvicorn.error - INFO - Shutting down
+2025-03-05 22:33:17,485 - uvicorn.error - INFO - Waiting for application shutdown.
+2025-03-05 22:33:17,485 - uvicorn.error - INFO - Application shutdown complete.
+2025-03-05 22:33:17,485 - uvicorn.error - INFO - Finished server process [12364]

@@ -1,0 +1,34 @@
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+select {
+    margin-bottom: 10px;
+}
+.btn {
+    background: #bbed21;
+    font-size: 12px;
+    padding: 10px;
+    margin: 0 0 0 0;
+    color: #525c69;
+}
+.btn:hover {
+    background: #d2f95f;
+}
+.btn:active {
+    background: #b2e232;
+}
+
+.select-container {
+    padding: 10px;
+}
+
+.form-control {
+    margin-bottom: 10px;
+}
+/*textarea.form-control {*/
+/*    width: 300px;*/
+/*}*/
