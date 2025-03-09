@@ -1,6 +1,6 @@
 from fastapi import Request, Form, APIRouter
 
-from config import settings, templates, session_manager, check_token, logger
+from config import settings, templates, session_manager, logger
 from repositories.logics import insert_tokens, get_bitrix_auth, update_tokens
 
 app_auth = APIRouter()
@@ -27,7 +27,7 @@ async def reboot_tokens(
         client_secret: str
 ) -> dict:
     """С помощью client_secret приложения можно обновить токены для дальнейшей работы приложения"""
-    check_token(client_secret)
+    settings.check_token(client_secret)
     session = await session_manager.get_session()
     access = await get_bitrix_auth()
     response = await session.get(

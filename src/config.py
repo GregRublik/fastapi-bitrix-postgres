@@ -48,6 +48,9 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_prefix="APP_", env_file=".env", extra="ignore")
 
+    def check_token(self, client_secret):
+        assert self.client_secret == client_secret, "Invalid Token"
+
 
 class SessionManager:
     _instance = None
@@ -79,7 +82,3 @@ templates = Jinja2Templates(directory="src/templates")
 session_manager = SessionManager.get_instance()
 
 settings = Settings(db=DbSettings())
-
-
-def check_token(client_secret):
-    assert client_secret == settings.client_secret, "Invalid Token"

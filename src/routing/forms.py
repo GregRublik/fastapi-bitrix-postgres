@@ -23,7 +23,7 @@ async def form_to_sp(
 
     session = await session_manager.get_session()
     access = await get_bitrix_auth()
-    result = await session.post(
+    await session.post(
         url=f"{settings.portal_url}rest/crm.item.add.json?",
         json={
             'auth': access[0],

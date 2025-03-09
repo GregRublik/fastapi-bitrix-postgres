@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request
-from config import logger, check_token, session_manager, templates, settings
+from config import logger, session_manager, templates, settings
 from repositories.logics import get_bitrix_auth
 
 
@@ -21,7 +21,7 @@ async def send_message(
     message: str,
     recipient: int
 ):
-    check_token(client_secret)
+    settings.check_token(client_secret)
     session = await session_manager.get_session()
     result = await session.get(
         url=f"{settings.portal_url}rest/55810/{settings.key_405}/im.message.add.json",
@@ -44,7 +44,7 @@ async def main_handler(
     """
     Главный обработчик. Предназначен для отправки любых запросов согласно установленных прав приложения.
     """
-    check_token(client_secret)
+    settings.check_token(client_secret)
     access = await get_bitrix_auth()
     session = await session_manager.get_session()
     result = await session.get(

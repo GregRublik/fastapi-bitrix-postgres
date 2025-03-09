@@ -1,7 +1,7 @@
 import datetime
 
 from fastapi import APIRouter, Request
-from config import logger, session_manager, settings, check_token
+from config import logger, session_manager, settings
 from repositories.logics import get_bitrix_auth
 from fastapi.responses import RedirectResponse
 
@@ -79,7 +79,7 @@ async def handler(
     name_element: str,
     client_secret: str
 ):
-    check_token(client_secret)
+    settings.check_token(client_secret)
     """
     Создание сообщения с кнопкой, для подтверждения об ознакомлении.
     """
@@ -92,7 +92,8 @@ async def handler(
             'MESSAGE': f"""[SIZE=16][B]⚠️Подтвердите получение информации о смене даты прихода 
 c {date_old} на новую {date_new} по сделке: [URL={link_element}]{name_element}[/URL][/B][/SIZE]""",
             'KEYBOARD[0][TEXT]': 'Подтвердить',
-            'KEYBOARD[0][LINK]': f'{settings.hosting_url}handler_button/?item_id={id_element}&client_secret={client_secret}',
+            'KEYBOARD[0][LINK]':
+                f'{settings.hosting_url}handler_button/?item_id={id_element}&client_secret={client_secret}',
             'KEYBOARD[0][BG_COLOR_TOKEN]': 'alert',
             'DIALOG_ID': 77297,
             'KEYBOARD[0][BLOCK]': 'Y'
@@ -134,7 +135,7 @@ async def handler_button(
     """
     Срабатывает при нажатии на кнопку "Подтвердить в сообщении."
     """
-    check_token(client_secret)
+    settings.check_token(client_secret)
     session = await session_manager.get_session()
     access = await get_bitrix_auth()
     element = await session.get(

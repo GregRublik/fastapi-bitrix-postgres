@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from config import logger, check_token, session_manager, settings
+from config import logger, session_manager, settings
 from repositories.logics import get_bitrix_auth
 
 app_user = APIRouter()
@@ -16,7 +16,7 @@ async def invite_an_employee(
     uf_department: str | None = None,
     adaptation_id: str | None = None,
 ):
-    check_token(client_secret)
+    settings.check_token(client_secret)
     session = await session_manager.get_session()
     access = await get_bitrix_auth()
     new_user = await session.post(
@@ -66,7 +66,7 @@ async def task_delegate(
     """
     Метод для делегирования всех задач сотрудника на руководителя при его увольнении
     """
-    check_token(client_secret)
+    settings.check_token(client_secret)
     session = await session_manager.get_session()
     access = await get_bitrix_auth()
     list_task = await session.get(url=f"{settings.portal_url}rest/tasks.task.list",
