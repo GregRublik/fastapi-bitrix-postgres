@@ -117,10 +117,9 @@ async def add_department(session: AsyncSession, body):
     )
     result = await session.execute(stmt)
     await session.commit()
-    list_depatrment = result.first()
-    print(list_depatrment)
-    a = list_depatrment[3]
-    if list_depatrment[3]:
+    list_department = result.first()
+    a = list_department[3]
+    if list_department[3]:
         a.append(str(body['department']))
         print('da')
     else:
