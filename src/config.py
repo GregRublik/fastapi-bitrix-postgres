@@ -5,7 +5,7 @@ from pydantic import Field
 from fastapi.templating import Jinja2Templates
 
 logger.add(
-    "logs/debug.log",
+    "src/logs/debug.log",
     format="{time} - {level} - {message}",
     level="INFO",
     rotation="5 MB",

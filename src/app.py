@@ -6,7 +6,6 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from config import logger, settings, session_manager
-# from routing import auth, concord, forms, universal, user
 import sentry_sdk
 
 from routing import auth, concord, forms, universal, user
